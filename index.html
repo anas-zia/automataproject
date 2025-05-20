@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    #reader {
+      width: 300px;
+      margin: auto;
+    }
+    #result {
+      margin-top: 10px;
+      font-size: 18px;
+      color: green;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h2 style="text-align:center;">QR Code Scanner</h2>
+  <div id="reader"></div>
+  <div id="result">Scan a QR code</div>
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      // Show the scanned QR code data
+      document.getElementById('result').innerText = `Scanned: ${decodedText}`;
+    }
+
+    function onScanError(errorMessage) {
+      // optional: log errors for debugging
+      // console.warn(`QR Scan Error: ${errorMessage}`);
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    const config = { fps: 10, qrbox: 250 };
+
+    // Start the QR scanner
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras && cameras.length) {
+        const cameraId = cameras[0].id;
+        html5QrCode.start(
+          cameraId,
+          config,
+          onScanSuccess,
+          onScanError
+        );
+      }
+    }).catch(err => {
+      console.error("Camera access error:", err);
+      document.getElementById('result').innerText = 'Camera not found or access denied.';
+    });
+  </script>
+
+</body>
+</html>
