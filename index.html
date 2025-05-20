@@ -1,58 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>QR Code Scanner</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
+    body {
+      text-align: center;
+      font-family: Arial;
+    }
     #reader {
       width: 300px;
+      height: 300px;
       margin: auto;
-    }
-    #result {
-      margin-top: 10px;
-      font-size: 18px;
-      color: green;
-      text-align: center;
+      border: 1px solid #ccc;
     }
   </style>
 </head>
 <body>
+  <h2>QR Code Scanner</h2>
 
-  <h2 style="text-align:center;">QR Code Scanner</h2>
+  <select id="cameraSelect"></select>
+  <br><br>
   <div id="reader"></div>
-  <div id="result">Scan a QR code</div>
+  <p id="result">Scan a QR code to see the result here</p>
 
   <script>
-    function onScanSuccess(decodedText, decodedResult) {
-      // Show the scanned QR code data
-      document.getElementById('result').innerText = `Scanned: ${decodedText}`;
-    }
-
-    function onScanError(errorMessage) {
-      // optional: log errors for debugging
-      // console.warn(`QR Scan Error: ${errorMessage}`);
-    }
-
     const html5QrCode = new Html5Qrcode("reader");
-    const config = { fps: 10, qrbox: 250 };
+    const cameraSelect = document.getElementById("cameraSelect");
+    const resultEl = document.getElementById("result");
+    let currentCameraId;
 
-    // Start the QR scanner
     Html5Qrcode.getCameras().then(cameras => {
       if (cameras && cameras.length) {
-        const cameraId = cameras[0].id;
-        html5QrCode.start(
-          cameraId,
-          config,
-          onScanSuccess,
-          onScanError
-        );
+        cameras.forEach((camera, index) => {
+          const option = document.createElement("option");
+          option.value = camera.id;
+          option.text = camera.label || `Camera ${index + 1}`;
+          cameraSelect.appendChild(option);
+        });
+
+        cameraSelect.addEventListener("change", () => {
+          if (currentCameraId) {
+            html5QrCode.stop().then(() => {
+              startScanner(cameraSelect.value);
+            });
+          } else {
+            startScanner(cameraSelect.value);
+          }
+        });
+
+        cameraSelect.value = cameras[0].id;
+        startScanner(cameras[0].id);
       }
     }).catch(err => {
       console.error("Camera access error:", err);
-      document.getElementById('result').innerText = 'Camera not found or access denied.';
+      resultEl.innerText = `Error accessing camera: ${err}`;
     });
-  </script>
 
+    function startScanner(cameraId) {
+      currentCameraId = cameraId;
+      html5QrCode.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 }
+        },
+        (decodedText) => {
+          resultEl.innerText = `Result: ${decodedText}`;
+        },
+        (errorMessage) => {
+          console.log("QR error:", errorMessage);
+        }
+      ).catch(err => {
+        console.error("Failed to start camera:", err);
+        resultEl.innerText = `Error: ${err}`;
+      });
+    }
+  </script>
 </body>
 </html>
