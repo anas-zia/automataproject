@@ -58,24 +58,29 @@
     });
 
     function startScanner(cameraId) {
-      currentCameraId = cameraId;
-      html5QrCode.start(
-        cameraId,
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 }
-        },
-        (decodedText) => {
-          resultEl.innerText = `Result: ${decodedText}`;
-        },
-        (errorMessage) => {
-          console.log("QR error:", errorMessage);
-        }
-      ).catch(err => {
-        console.error("Failed to start camera:", err);
-        resultEl.innerText = `Error: ${err}`;
-      });
+  currentCameraId = cameraId;
+  html5QrCode.start(
+    cameraId,
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 }
+    },
+    (decodedText) => {
+      if (decodedText.startsWith("http")) {
+        resultEl.innerHTML = `Result: <a href="${decodedText}" target="_blank">${decodedText}</a>`;
+      } else {
+        resultEl.innerText = `Result: ${decodedText}`;
+      }
+    },
+    (errorMessage) => {
+      console.log("QR error:", errorMessage);
     }
+  ).catch(err => {
+    console.error("Failed to start camera:", err);
+    resultEl.innerText = `Error: ${err}`;
+  });
+}
+
   </script>
 </body>
 </html>
