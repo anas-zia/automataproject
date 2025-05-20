@@ -6,13 +6,39 @@
   <style>
     body {
       text-align: center;
-      font-family: Arial;
+      font-family: Arial, sans-serif;
+      padding-top: 30px;
     }
+
     #reader {
       width: 300px;
       height: 300px;
-      margin: auto;
-      border: 1px solid #ccc;
+      margin: 0 auto;
+      border: 2px solid #444;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #cameraSelect {
+      margin: 10px;
+      padding: 5px;
+      font-size: 16px;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -21,6 +47,7 @@
 
   <select id="cameraSelect"></select>
   <br><br>
+
   <div id="reader"></div>
   <p id="result">Scan a QR code to see the result here</p>
 
@@ -58,29 +85,28 @@
     });
 
     function startScanner(cameraId) {
-  currentCameraId = cameraId;
-  html5QrCode.start(
-    cameraId,
-    {
-      fps: 10,
-      qrbox: { width: 250, height: 250 }
-    },
-    (decodedText) => {
-      if (decodedText.startsWith("http")) {
-        resultEl.innerHTML = `Result: <a href="${decodedText}" target="_blank">${decodedText}</a>`;
-      } else {
-        resultEl.innerText = `Result: ${decodedText}`;
-      }
-    },
-    (errorMessage) => {
-      console.log("QR error:", errorMessage);
+      currentCameraId = cameraId;
+      html5QrCode.start(
+        cameraId,
+        {
+          fps: 10,
+          qrbox: { width: 300, height: 300 }
+        },
+        (decodedText) => {
+          if (decodedText.startsWith("http")) {
+            resultEl.innerHTML = `Result: <a href="${decodedText}" target="_blank">${decodedText}</a>`;
+          } else {
+            resultEl.innerText = `Result: ${decodedText}`;
+          }
+        },
+        (errorMessage) => {
+          console.log("QR error:", errorMessage);
+        }
+      ).catch(err => {
+        console.error("Failed to start camera:", err);
+        resultEl.innerText = `Error: ${err}`;
+      });
     }
-  ).catch(err => {
-    console.error("Failed to start camera:", err);
-    resultEl.innerText = `Error: ${err}`;
-  });
-}
-
   </script>
 </body>
 </html>
